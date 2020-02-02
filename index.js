@@ -1,8 +1,10 @@
 const ldap = require('ldapjs');
+const dotenv = require('dotenv').config()
 const fs = require('fs');
 const axios = require('axios');
 
 const server = ldap.createServer();
+const port = process.env.PORT || '1389';
 
 function loadPasswdFile(req, res, next) {
 
@@ -38,8 +40,8 @@ function loadPasswdFile(req, res, next) {
     });
 }
 
-server.bind('cn=root', function(req, res, next) {
-    if (req.dn.toString() !== 'cn=root' || req.credentials !== 'secret')
+server.bind('cn='+process.env.BIND_TREE, function(req, res, next) {
+    if (req.dn.toString() !== 'cn='+process.env.BIND_TREE || req.credentials !== process.env.SECRET)
       return next(new ldap.InvalidCredentialsError());
   
     res.end();
@@ -47,7 +49,8 @@ server.bind('cn=root', function(req, res, next) {
 });
 
 function authorize(req, res, next) {
-  if (!req.connection.ldap.bindDN.equals('cn=root'))
+  
+  if (!req.connection.ldap.bindDN.equals('cn='+process.env.BIND_TREE))
     return next(new ldap.InsufficientAccessRightsError());
   return next();
 }
@@ -57,8 +60,7 @@ function authorize(req, res, next) {
 
 let pre = [authorize, loadPasswdFile];
 
-server.search('o=myhost', pre, function(req, res, next) {
-  console.log(req.filter);
+server.search('o='+process.env.ORG1, pre, function(req, res, next) {
   Object.keys(req.users).forEach(function(k) { 
     if (req.filter.matches(req.users[k].attributes))
       res.send(req.users[k]);
@@ -68,6 +70,16 @@ server.search('o=myhost', pre, function(req, res, next) {
   return next();
 });
 
-server.listen(1389, function() {
+server.search('o='+process.env.ORG2, pre, function(req, res, next) {
+  Object.keys(req.users).forEach(function(k) { 
+    if (req.filter.matches(req.users[k].attributes))
+      res.send(req.users[k]);
+  });
+
+  res.end();
+  return next();
+});
+
+server.listen(port, function() {
   console.log('/etc/passwd LDAP server up at: %s', server.url);
 });
