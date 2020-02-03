@@ -57,15 +57,19 @@ function authorize(req, res, next) {
 
 
 
-
 let pre = [authorize, loadPasswdFile];
 
-server.search('o='+process.env.ORG1, pre, function(req, res, next) {
-  Object.keys(req.users).forEach(function(k) { 
-    if (req.filter.matches(req.users[k].attributes))
-      res.send(req.users[k]);
+server.search('o='+process.env.ORG1, function(req, res, next) {
+  axios.post(process.env.API_URL+'/user', {
+    id: req.filter.value
+  })
+  .then((response) => {
+    console.log("response");
+    res.send(response);
+  }, (error) => {
+    console.log("error");
+    res.send(error);
   });
-
   res.end();
   return next();
 });
@@ -81,5 +85,5 @@ server.search('o='+process.env.ORG2, pre, function(req, res, next) {
 });
 
 server.listen(port, function() {
-  console.log('/etc/passwd LDAP server up at: %s', server.url);
+  console.log('ldap server runing', server.url);
 });
