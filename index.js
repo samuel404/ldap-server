@@ -4,8 +4,8 @@ const fs = require('fs');
 const axios = require('axios');
 
 const server = ldap.createServer();
-const port = process.env.PORT || '1389';
-
+const port = process.env.LDAP_PORT || '1389';
+/*
 function loadPasswdFile(req, res, next) {
 
     fs.readFile('./pass.txt', 'utf8', function(err, data) {
@@ -54,13 +54,16 @@ function authorize(req, res, next) {
     return next(new ldap.InsufficientAccessRightsError());
   return next();
 }
+*/
 
+//[ 'type', 'filters', 'json' ]
 
-
-let pre = [authorize, loadPasswdFile];
-
+//let pre = loadPasswdFile;
+//(&(MAIL=123)(TITLE=212341))
 server.search('o='+process.env.ORG1, function(req, res, next) {
-  axios.post(process.env.API_URL+'/user', {
+  console.log(req.filter.filters[0].value);
+  console.log(req.filter.filters[1].value);
+  axios.get(process.env.API_URL+'/user', {
     id: req.filter.value
   })
   .then((response) => {
@@ -74,15 +77,9 @@ server.search('o='+process.env.ORG1, function(req, res, next) {
   return next();
 });
 
-server.search('o='+process.env.ORG2, pre, function(req, res, next) {
-  Object.keys(req.users).forEach(function(k) { 
-    if (req.filter.matches(req.users[k].attributes))
-      res.send(req.users[k]);
-  });
 
-  res.end();
-  return next();
-});
+
+
 
 server.listen(port, function() {
   console.log('ldap server runing', server.url);
