@@ -1,11 +1,11 @@
-const ldap = require('ldapjs');
-const dotenv = require('dotenv').config()
-const fs = require('fs');
-const axios = require('axios');
+const ldap = require("ldapjs");
+const dotenv = require("dotenv").config();
+const fs = require("fs");
+const axios = require("axios");
 
 const server = ldap.createServer();
-const port = process.env.LDAP_PORT || '1389';
-/*
+const port = process.env.LDAP_PORT || "1389";
+
 function loadPasswdFile(req, res, next) {
 
     fs.readFile('./pass.txt', 'utf8', function(err, data) {
@@ -20,18 +20,16 @@ function loadPasswdFile(req, res, next) {
           continue;
   
         let record = lines[i].split(':');
+        console.log(record);
         if (!record || !record.length)
           continue;
         req.users[record[0]] = {
           dn: 'cn=' + record[0] + ', ou=users, o=myhost',
           attributes: {
             cn: record[0],
-            uid: record[2],
-            gid: record[3],
-            description: record[4],
-            homedirectory: record[5],
-            shell: record[6] || '',
-            objectclass: 'unixUser'
+            id: record[1],
+            system: record[2],
+            newId: record[3],
           }
         };
       }
@@ -39,7 +37,7 @@ function loadPasswdFile(req, res, next) {
       return next();
     });
 }
-
+/*
 server.bind('cn='+process.env.BIND_TREE, function(req, res, next) {
     if (req.dn.toString() !== 'cn='+process.env.BIND_TREE || req.credentials !== process.env.SECRET)
       return next(new ldap.InvalidCredentialsError());
@@ -57,30 +55,46 @@ function authorize(req, res, next) {
 */
 
 //[ 'type', 'filters', 'json' ]
-
-//let pre = loadPasswdFile;
 //(&(MAIL=123)(TITLE=212341))
-server.search('o='+process.env.ORG1, function(req, res, next) {
-  console.log(req.filter.filters[0].value);
-  console.log(req.filter.filters[1].value);
-  axios.get(process.env.API_URL+'/user', {
-    id: req.filter.value
-  })
-  .then((response) => {
-    console.log("response");
-    res.send(response);
-  }, (error) => {
-    console.log("error");
-    res.send(error);
+let pre = loadPasswdFile;
+
+requestValidation = req => {
+  if (req.filters && req.filters.length === 2 
+    &&(req.filters[0].attribute === process.env.ATTRIBUTE1 || req.filters[0].attribute === process.env.ATTRIBUTE2)
+    &&(req.filters[1].attribute === process.env.ATTRIBUTE1 || req.filters[1].attribute === process.env.ATTRIBUTE2)) return true;
+
+  return false;
+};
+
+
+server.search("o=" + process.env.ORG1, pre,function(req, res, next) {
+  //if (requestValidation(req.filter)) {
+    //return next(new ldap.InvalidAttriubteSyntaxError(parent.toString()));
+  //}
+  Object.keys(req.users).forEach(function(k) {
+    if (req.filter.matches(req.users[k].attributes))
+      res.send(req.users[k]);
   });
+  /*
+  axios
+    .get(process.env.API_URL, {
+      id: req.filter.filters[0].value,
+      system: req.filter.filters[1].value
+    })
+    .then(
+      response => {
+        console.log("response");
+        res.send(response);
+      },
+      error => {
+       console.log("error");
+       return next(new ldap.InvalidAttriubteSyntaxError(parent.toString()));
+      }
+    );*/
   res.end();
   return next();
 });
 
-
-
-
-
 server.listen(port, function() {
-  console.log('ldap server runing', server.url);
+  console.log("ldap server runing", server.url);
 });
