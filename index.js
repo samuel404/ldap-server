@@ -36,24 +36,7 @@ function loadPasswdFile(req, res, next) {
     return next();
   });
 }
-/*
-server.bind('cn='+process.env.BIND_TREE, function(req, res, next) {
-    if (req.dn.toString() !== 'cn='+process.env.BIND_TREE || req.credentials !== process.env.SECRET)
-      return next(new ldap.InvalidCredentialsError());
-  
-    res.end();
-    return next();
-});
 
-function authorize(req, res, next) {
-  
-  if (!req.connection.ldap.bindDN.equals('cn='+process.env.BIND_TREE))
-    return next(new ldap.InsufficientAccessRightsError());
-  return next();
-}
-*/
-
-//[ 'type', 'filters', 'json' ]
 //(&(MAIL=123)(TITLE=212341))
 let pre = loadPasswdFile;
 
@@ -97,10 +80,3 @@ server.search("o=" + process.env.ORG1, pre,function(req, res, next) {
 server.listen(port, function() {
   console.log("ldap server runing", server.url);
 });
-
-/**
-user:T87470937:AmanBoard:123123123 
-user:T87470989:AmanBoard:321321321 
-user:T87470975:Drive:456456456 
-user:T87471049:Drive:654654654
- */
