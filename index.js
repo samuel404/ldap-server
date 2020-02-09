@@ -7,35 +7,34 @@ const server = ldap.createServer();
 const port = process.env.LDAP_PORT || "1389";
 
 function loadPasswdFile(req, res, next) {
+  fs.readFile('./pass.txt', 'utf8', function(err, data) {
+    if (err)
+      return next(new ldap.OperationsError(err.message));
 
-    fs.readFile('./pass.txt', 'utf8', function(err, data) {
-      if (err)
-        return next(new ldap.OperationsError(err.message));
-  
-      req.users = {};
-  
-      let lines = data.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        if (!lines[i] || /^#/.test(lines[i]))
-          continue;
-  
-        let record = lines[i].split(':');
-        console.log(record);
-        if (!record || !record.length)
-          continue;
-        req.users[record[0]] = {
-          dn: 'cn=' + record[0] + ', ou=users, o=myhost',
-          attributes: {
-            cn: record[0],
-            id: record[1],
-            system: record[2],
-            newId: record[3],
-          }
-        };
-      }
-      
-      return next();
-    });
+    req.users = {};
+
+    var lines = data.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      if (!lines[i] || /^#/.test(lines[i]))
+        continue;
+
+      var record = lines[i].split(':');
+      if (!record || !record.length)
+        continue;
+
+      req.users[record[0]] = {
+        dn: 'cn=' + record[0] + ', ou=users, o=myhost',
+        attributes: {
+          cn: record[0],
+          id: record[1],
+          system: record[2],
+          newId: record[3],
+          objectclass: 'newUser'
+        }
+      };
+    }
+    return next();
+  });
 }
 /*
 server.bind('cn='+process.env.BIND_TREE, function(req, res, next) {
@@ -98,3 +97,10 @@ server.search("o=" + process.env.ORG1, pre,function(req, res, next) {
 server.listen(port, function() {
   console.log("ldap server runing", server.url);
 });
+
+/**
+user:T87470937:AmanBoard:123123123 
+user:T87470989:AmanBoard:321321321 
+user:T87470975:Drive:456456456 
+user:T87471049:Drive:654654654
+ */
