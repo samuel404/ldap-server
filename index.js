@@ -37,42 +37,15 @@ function loadPasswdFile(req, res, next) {
   });
 }
 
-//(&(MAIL=123)(TITLE=212341))
+
 let pre = loadPasswdFile;
 
-requestValidation = req => {
-  if (req.filters && req.filters.length === 2 
-    &&(req.filters[0].attribute === process.env.ATTRIBUTE1 || req.filters[0].attribute === process.env.ATTRIBUTE2)
-    &&(req.filters[1].attribute === process.env.ATTRIBUTE1 || req.filters[1].attribute === process.env.ATTRIBUTE2)) return true;
+server.search("o=" + process.env.ORG, pre,function(req, res, next) {
 
-  return false;
-};
-
-
-server.search("o=" + process.env.ORG1, pre,function(req, res, next) {
-  //if (requestValidation(req.filter)) {
-    //return next(new ldap.InvalidAttriubteSyntaxError(parent.toString()));
-  //}
   Object.keys(req.users).forEach(function(k) {
     if (req.filter.matches(req.users[k].attributes))
       res.send(req.users[k]);
   });
-  /*
-  axios
-    .get(process.env.API_URL, {
-      id: req.filter.filters[0].value,
-      system: req.filter.filters[1].value
-    })
-    .then(
-      response => {
-        console.log("response");
-        res.send(response);
-      },
-      error => {
-       console.log("error");
-       return next(new ldap.InvalidAttriubteSyntaxError(parent.toString()));
-      }
-    );*/
   res.end();
   return next();
 });
