@@ -13,17 +13,17 @@ function loadPasswdFile(req, res, next) {
 
     req.users = {};
 
-    var lines = data.split('\n');
-    for (var i = 0; i < lines.length; i++) {
+    let lines = data.split('\n');
+    for (let i = 0; i < lines.length; i++) {
       if (!lines[i] || /^#/.test(lines[i]))
         continue;
 
-      var record = lines[i].split(':');
+      let record = lines[i].split(':');
       if (!record || !record.length)
         continue;
 
       req.users[record[0]] = {
-        dn: 'cn=' + record[0] + ', ou=users, o=myhost',
+        dn: 'cn=' + record[0] ,
         attributes: {
           cn: record[0],
           id: record[1],
