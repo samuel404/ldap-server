@@ -7,4 +7,12 @@ function authorize(req, res, next) {
   return next();
 }
 
-module.exports = { authorize };
+function bind(req, res, next) {
+    if (req.dn.toString() !== "cn=root" || req.credentials !== "secret")
+      return next(new ldap.InvalidCredentialsError());
+  
+    res.end();
+    return next();
+  }
+
+module.exports = { authorize ,bind};
