@@ -7,11 +7,8 @@ function urlEncoded(req, res, next) {
     attribute: "url"
   });
 
-  if (
-    urlAttribute.matches({
-      [req.filter.attribute]: req.filter.value || req.filter.initial
-    })
-  ) {
+  if (urlAttribute.matches({[req.filter.attribute]: req.filter.value || req.filter.initial})) 
+    {
     const response = {
       dn: "o=example",
       attributes: {
@@ -29,7 +26,22 @@ function urlEncoded(req, res, next) {
   return next();
 }
 
+function findIfUserExist(req,res,next){
+    const urlAttribute = new PresenceFilter({
+        attribute: "userId",
+        attribute:"userName"
+    });
+    const users = {adir:1111,
+                    dor:2222,
+                    liad:333};
+    console.log(req.filter.matches(urlAttribute));
+    
+    if (urlAttribute.matches(req.filter)) {
+        console.log("asd");
+    }
+    res.end();
+    return next();
+}
 
 
-
-module.exports = { urlEncoded };
+module.exports = { urlEncoded ,findIfUserExist};
