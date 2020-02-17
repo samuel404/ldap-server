@@ -3,6 +3,7 @@ const urlencode = require("urlencode");
 const PresenceFilter = require("ldapjs").PresenceFilter;
 
 
+
 function getAttribute(req){
   const attrib = {};
   if(req.filter.filters){
@@ -42,17 +43,47 @@ function urlEncoded(req, res, next) {
 }
 
 function findIfUserExist(req,res,next){
-
-    const users = [{userName:"adir",userId:1111},
-                    {userName:"dor",userId:2222},
-                    {userName:"liad",userId:333}];
-    
-    users.forEach(user => {
-      console.log(user);
-      if(req.filter.matches(user)){
-        console.log(user);
-      }
+  
+    const nameAttribute = new PresenceFilter({
+      attribute: "userName"
     });
+    const idAttribute = new PresenceFilter({
+      attribute: "userId"
+    });
+
+    const attrib = getAttribute(req);
+    const users = [{username:"adir",userid:'1111'},
+                    {username:"dor",userid:'2222'},
+                    {username:"liad",userid:'3333'}];
+
+    if(nameAttribute.matches(attrib) && idAttribute.matches(attrib)){
+      users.forEach(user => {
+        if(attrib.userid === user.userid && attrib.username === user.username){
+          const response = {
+            dn: "o=example",
+            attributes: {
+              userId: attrib.userid,
+              userName: attrib.username
+            }
+          };
+          res.send(response);
+          res.end();
+          return next();
+
+        }
+      });
+    }
+    else {
+      return next(new ldap.NoSuchAttributeError(Object.keys(attrib).toString()));
+    }
+    const response = {
+      dn: "o=example",
+      attributes: {
+        userId: "not found",
+        userName: "not found"
+      }
+    };
+    res.send(response);
     res.end();
     return next();
 }
