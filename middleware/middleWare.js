@@ -24,7 +24,7 @@ function urlEncoded(req, res, next) {
   const attrib = getAttribute(req);
   if (urlAttribute.matches(attrib)) 
     {
-      console.log("asd");
+      
     const response = {
       dn: "o=example",
       attributes: {
@@ -55,20 +55,19 @@ function findIfUserExist(req,res,next){
     const users = [{username:"adir",userid:'1111'},
                     {username:"dor",userid:'2222'},
                     {username:"liad",userid:'3333'}];
-
+    let response = {};
+    let exist = false;
     if(nameAttribute.matches(attrib) && idAttribute.matches(attrib)){
       users.forEach(user => {
         if(attrib.userid === user.userid && attrib.username === user.username){
-          const response = {
+            response = {
             dn: "o=example",
             attributes: {
               userId: attrib.userid,
               userName: attrib.username
             }
           };
-          res.send(response);
-          res.end();
-          return next();
+          exist = true;
 
         }
       });
@@ -76,13 +75,15 @@ function findIfUserExist(req,res,next){
     else {
       return next(new ldap.NoSuchAttributeError(Object.keys(attrib).toString()));
     }
-    const response = {
-      dn: "o=example",
-      attributes: {
-        userId: "not found",
-        userName: "not found"
-      }
-    };
+    if(!exist){
+        response = {
+        dn: "o=example",
+        attributes: {
+          userId: "not found",
+          userName: "not found"
+        }
+      };
+    }
     res.send(response);
     res.end();
     return next();
