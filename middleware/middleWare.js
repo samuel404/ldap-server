@@ -4,45 +4,45 @@ const PresenceFilter = require("ldapjs").PresenceFilter;
 
 
 
-function getAttribute(req){
-  const attrib = {};
+const getAttributes = (req) => {
+  const attributes = {};
   if(req.filter.filters){
     req.filter.filters.forEach(filter => {
-      attrib[filter.attribute] = filter.value || filter.initial
+      attributes[filter.attribute] = filter.value || filter.initial
     });
   }
   else{
-    attrib[req.filter.attribute] = req.filter.value || req.filter.initial;
+    attributes[req.filter.attribute] = req.filter.value || req.filter.initial;
   }
-  return attrib;
+  return attributes;
 }
 
-function urlEncoded(req, res, next) {
+const urlEncoded = (req, res, next) => {
   const urlAttribute = new PresenceFilter({
     attribute: "url"
   });
-  const attrib = getAttribute(req);
-  if (urlAttribute.matches(attrib)) 
+  const attributes = getAttributes(req);
+  if (urlAttribute.matches(attributes)) 
     {
       
     const response = {
       dn: "o=example",
       attributes: {
-        url: attrib.url,
-        urlencoded: urlencode(attrib.url)
+        url: attributes.url,
+        urlencoded: urlencode(attributes.url)
       }
     };
     res.send(response);
   } 
   else {
-    return next(new ldap.NoSuchAttributeError(Object.keys(attrib).toString()));
+    return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
   }
 
   res.end();
   return next();
 }
 
-function findIfUserExist(req,res,next){
+const findIfUserExist = (req,res,next) => {
   
     const nameAttribute = new PresenceFilter({
       attribute: "userName"
@@ -51,20 +51,20 @@ function findIfUserExist(req,res,next){
       attribute: "userId"
     });
 
-    const attrib = getAttribute(req);
+    const attributes = getAttributes(req);
     const users = [{username:"adir",userid:'1111'},
                     {username:"dor",userid:'2222'},
                     {username:"liad",userid:'3333'}];
     let response = {};
     let exist = false;
-    if(nameAttribute.matches(attrib) && idAttribute.matches(attrib)){
+    if(nameAttribute.matches(attributes) && idAttribute.matches(attributes)){
       users.forEach(user => {
-        if(attrib.userid === user.userid && attrib.username === user.username){
+        if(attributes.userid === user.userid && attributes.username === user.username){
             response = {
             dn: "o=example",
             attributes: {
-              userId: attrib.userid,
-              userName: attrib.username
+              userId: attributes.userid,
+              userName: attributes.username
             }
           };
           exist = true;
@@ -73,7 +73,7 @@ function findIfUserExist(req,res,next){
       });
     }
     else {
-      return next(new ldap.NoSuchAttributeError(Object.keys(attrib).toString()));
+      return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
     }
     if(!exist){
         response = {
