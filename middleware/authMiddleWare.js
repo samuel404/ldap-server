@@ -1,5 +1,5 @@
 const ldap = require("ldapjs");
-const config = require("./config");
+const config = require("../config");
 
 const authorize = (req, res, next) => {
   if (!req.connection.ldap.bindDN.equals("cn=root"))

@@ -1,20 +1,26 @@
+const {PresenceFilter} = require("ldapjs");
 const ldap = require("ldapjs");
 const urlencode = require("urlencode");
-const PresenceFilter = require("ldapjs").PresenceFilter;
 
+const getArrayAttributes = (attributes,req) => {
+  req.filter.filters.forEach(filter => {
+    attributes[filter.attribute] = filter.value || filter.initial
+  });
+  return attributes;
+}
 
+const getSingelAttribute = (attributes,req) => {
+  attributes[req.filter.attribute] = req.filter.value || req.filter.initial;
+  return attributes;
+}
 
 const getAttributes = (req) => {
-  const attributes = {};
+  let attributes = {};
+
   if(req.filter.filters){
-    req.filter.filters.forEach(filter => {
-      attributes[filter.attribute] = filter.value || filter.initial
-    });
+    return getArrayAttributes(attributes,req);
   }
-  else{
-    attributes[req.filter.attribute] = req.filter.value || req.filter.initial;
-  }
-  return attributes;
+  return getSingelAttribute(attribute,req);
 }
 
 const urlEncoded = (req, res, next) => {
