@@ -1,6 +1,8 @@
-FROM node:9-slim
-WORKDIR /app
-COPY package.json /app
-RUN npm install
-COPY . /app
-CMD ["npm", "start"]
+FROM node:12-alpine
+ENV NODE_ENV production
+WORKDIR /usr/src/app
+COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
+RUN npm install --production --silent
+COPY . .
+EXPOSE 1389
+CMD npm start

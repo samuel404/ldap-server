@@ -1,0 +1,10 @@
+version: '2.1'
+
+services:
+  ldap-server:
+    image: ldap-server
+    build: .
+    environment:
+      NODE_ENV: production
+    ports:
+      - 1389:1389
