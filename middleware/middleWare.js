@@ -1,4 +1,4 @@
-const {PresenceFilter} = require("ldapjs");
+
 const ldap = require("ldapjs");
 const urlencode = require("urlencode");
 const config = require("../config");
@@ -42,7 +42,7 @@ const createResponse = (attributes,dn) => {
 }
 
 const urlEncoded = (req, res, next) => {
-  const urlAttribute = new PresenceFilter({
+  const urlAttribute = new ldap.PresenceFilter({
     attribute: "url"
   });
 
@@ -62,11 +62,11 @@ const checkIfSameUser = (attributes, user) => {return attributes.userid === user
 
 const findIfUserExist = (req,res,next) => {
   
-  const nameAttribute = new PresenceFilter({
+  const nameAttribute = new ldap.PresenceFilter({
     attribute: "userName"
   });
 
-  const idAttribute = new PresenceFilter({
+  const idAttribute = new ldap.PresenceFilter({
     attribute: "userId"
   });
 
@@ -87,8 +87,9 @@ const findIfUserExist = (req,res,next) => {
   }
   return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
   
-    
 }
+
+
 
 
 module.exports = { urlEncoded ,findIfUserExist};
