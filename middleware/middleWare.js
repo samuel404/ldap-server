@@ -1,51 +1,61 @@
 const {PresenceFilter} = require("ldapjs");
 const ldap = require("ldapjs");
 const urlencode = require("urlencode");
+const config = require("../config");
 
-const getArrayAttributes = (attributes,req) => {
+const getArrayAttributes = (req) => {
+  const attributes = {};
   req.filter.filters.forEach(filter => {
     attributes[filter.attribute] = filter.value || filter.initial
   });
   return attributes;
 }
 
-const getSingelAttribute = (attributes,req) => {
+const getSingelAttribute = (req) => {
+  const attributes = {};
+
   attributes[req.filter.attribute] = req.filter.value || req.filter.initial;
+
   return attributes;
 }
 
 const getAttributes = (req) => {
-  let attributes = {};
-
   if(req.filter.filters){
-    return getArrayAttributes(attributes,req);
+    return getArrayAttributes(req);
   }
-  return getSingelAttribute(attribute,req);
+
+  return getSingelAttribute(req);
+}
+
+const createResponse = (attributes,dn) => {
+  const response = {
+    dn: dn || "o=example",
+    attributes: {
+    }
+  };
+
+  for (let key in attributes) {
+    response.attributes[key] = attributes[key];
+  }
+
+  return response;
 }
 
 const urlEncoded = (req, res, next) => {
   const urlAttribute = new PresenceFilter({
     attribute: "url"
   });
-  const attributes = getAttributes(req);
-  if (urlAttribute.matches(attributes)) 
-    {
-      
-    const response = {
-      dn: "o=example",
-      attributes: {
-        url: attributes.url,
-        urlencoded: urlencode(attributes.url)
-      }
-    };
-    res.send(response);
-  } 
-  else {
-    return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
-  }
 
-  res.end();
-  return next();
+  const attributes = getAttributes(req);
+
+  if (urlAttribute.matches(attributes)) {
+    attributes.urlencoded = urlencode(attributes.url);
+    res.send(createResponse(attributes));
+    res.end();
+  } 
+
+  return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
+
 }
 
 const findIfUserExist = (req,res,next) => {
@@ -58,14 +68,13 @@ const findIfUserExist = (req,res,next) => {
     });
 
     const attributes = getAttributes(req);
-    const users = [{username:"adir",userid:'1111'},
-                    {username:"dor",userid:'2222'},
-                    {username:"liad",userid:'3333'}];
+
     let response = {};
     let exist = false;
     if(nameAttribute.matches(attributes) && idAttribute.matches(attributes)){
-      users.forEach(user => {
+      config.users.forEach(user => {
         if(attributes.userid === user.userid && attributes.username === user.username){
+            console.log(createResponse(attributes));
             response = {
             dn: "o=example",
             attributes: {
