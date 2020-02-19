@@ -62,8 +62,8 @@ const checkIfSameUser = (attributes, user) => {return attributes.userid === user
 
 const findIfUserExist = (req,res,next) => {
   
-  const nameAttribute = new ldap.PresenceFilter({
-    attribute: "userName"
+  const systemAttribute = new ldap.PresenceFilter({
+    attribute: "system"
   });
 
   const idAttribute = new ldap.PresenceFilter({
@@ -73,7 +73,9 @@ const findIfUserExist = (req,res,next) => {
   const attributes = getAttributes(req);
 
 
-  if(nameAttribute.matches(attributes) && idAttribute.matches(attributes)){
+  if(idAttribute.matches(attributes)){
+    
+    /*
     config.users.forEach(user => {
 
       if(checkIfSameUser(attributes,user)){
@@ -82,7 +84,7 @@ const findIfUserExist = (req,res,next) => {
         res.end();
         return next();
       }
-    });
+    });*/
     return next(new ldap.CompareFalseError(Object.values(attributes).toString()));
   }
   return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
