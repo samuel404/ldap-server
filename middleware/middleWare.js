@@ -58,50 +58,36 @@ const urlEncoded = (req, res, next) => {
 
 }
 
+const checkIfSameUser = (attributes, user) => {return attributes.userid === user.userid && attributes.username === user.username}
+
 const findIfUserExist = (req,res,next) => {
   
-    const nameAttribute = new PresenceFilter({
-      attribute: "userName"
+  const nameAttribute = new PresenceFilter({
+    attribute: "userName"
+  });
+
+  const idAttribute = new PresenceFilter({
+    attribute: "userId"
+  });
+
+  const attributes = getAttributes(req);
+
+
+  if(nameAttribute.matches(attributes) && idAttribute.matches(attributes)){
+    config.users.forEach(user => {
+
+      if(checkIfSameUser(attributes,user)){
+        res.send(createResponse(attributes));
+
+        res.end();
+        return next();
+      }
     });
-    const idAttribute = new PresenceFilter({
-      attribute: "userId"
-    });
-
-    const attributes = getAttributes(req);
-
-    let response = {};
-    let exist = false;
-    if(nameAttribute.matches(attributes) && idAttribute.matches(attributes)){
-      config.users.forEach(user => {
-        if(attributes.userid === user.userid && attributes.username === user.username){
-            console.log(createResponse(attributes));
-            response = {
-            dn: "o=example",
-            attributes: {
-              userId: attributes.userid,
-              userName: attributes.username
-            }
-          };
-          exist = true;
-
-        }
-      });
-    }
-    else {
-      return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
-    }
-    if(!exist){
-        response = {
-        dn: "o=example",
-        attributes: {
-          userId: "not found",
-          userName: "not found"
-        }
-      };
-    }
-    res.send(response);
-    res.end();
-    return next();
+    return next(new ldap.CompareFalseError(Object.values(attributes).toString()));
+  }
+  return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
+  
+    
 }
 
 
