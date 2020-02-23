@@ -60,7 +60,7 @@ const urlEncoded = (req, res, next) => {
 
 const checkIfSameUser = (attributes, user) => {return attributes.userid === user.userid && attributes.username === user.username}
 
-const findIfUserExist = (req,res,next) => {
+const getUserNewId = (req,res,next) => {
   
   const systemAttribute = new ldap.PresenceFilter({
     attribute: "system"
@@ -75,16 +75,7 @@ const findIfUserExist = (req,res,next) => {
 
   if(idAttribute.matches(attributes)){
     
-    /*
-    config.users.forEach(user => {
 
-      if(checkIfSameUser(attributes,user)){
-        res.send(createResponse(attributes));
-
-        res.end();
-        return next();
-      }
-    });*/
     return next(new ldap.CompareFalseError(Object.values(attributes).toString()));
   }
   return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
@@ -94,4 +85,4 @@ const findIfUserExist = (req,res,next) => {
 
 
 
-module.exports = { urlEncoded ,findIfUserExist};
+module.exports = { urlEncoded ,getUserNewId};
