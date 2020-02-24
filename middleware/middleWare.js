@@ -1,7 +1,8 @@
 
 const ldap = require("ldapjs");
 const urlencode = require("urlencode");
-const config = require("../config");
+
+const {doesUserExist} = require("../users/users");
 
 const getArrayAttributes = (req) => {
   const attributes = {};
@@ -58,14 +59,10 @@ const urlEncoded = (req, res, next) => {
 
 }
 
-const checkIfSameUser = (attributes, user) => {return attributes.userid === user.userid && attributes.username === user.username}
+
 
 const getUserNewId = (req,res,next) => {
   
-  const systemAttribute = new ldap.PresenceFilter({
-    attribute: "system"
-  });
-
   const idAttribute = new ldap.PresenceFilter({
     attribute: "userId"
   });
@@ -74,7 +71,20 @@ const getUserNewId = (req,res,next) => {
 
 
   if(idAttribute.matches(attributes)){
-    
+    const newId = doesUserExist(attributes);
+    if(newId){
+      if(newId.length === 2) {
+        attributes.newId = newId[1];
+        attributes.system = newId[0];
+      }
+      else{
+        attributes.newId = newId;
+      }
+      
+      res.send(createResponse(attributes));
+      res.end();
+      return next();
+    }
 
     return next(new ldap.CompareFalseError(Object.values(attributes).toString()));
   }
