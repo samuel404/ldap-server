@@ -69,13 +69,10 @@ const getUserNewId = (req,res,next) => {
 
   const attributes = getAttributes(req);
 
-
-  if(idAttribute.matches(attributes)){
+  if(idAttribute.matches(attributes)) {
     const newId = doesUserExist(attributes);
 
-    if(newId){
-      
-  
+    if(newId) {
       
       res.send(createResponse(newId));
       res.end();
