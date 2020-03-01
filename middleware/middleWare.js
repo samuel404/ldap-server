@@ -71,7 +71,7 @@ const getUserNewId = (req,res,next) => {
 
   if(idAttribute.matches(attributes)) {
     const newId = doesUserExist(attributes);
-
+    
     if(newId) {
       
       res.send(createResponse(newId));
