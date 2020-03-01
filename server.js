@@ -11,6 +11,6 @@ server.search("o=url", [authorize, urlEncoded]);
 server.search("o=user", [authorize, getUserNewId]);
 
 
-server.listen(config.port, function() {
+server.listen(config.port, () => {
   console.log("ldap server runing", server.url);
 });
