@@ -4,7 +4,9 @@ const fs = require("fs");
 const doesUserExist = (attributes) => {
     const users = getUsers();
     if(attributes.system){
-        return {userid:attributes.system , system:users[attributes.userid][attributes.system]}
+        if(users[attributes.userid])
+            return {userid:attributes.system , system:users[attributes.userid][attributes.system]}
+        return undefined;
     }
     const value = users[attributes.userid][Object.keys(users[attributes.userid])[0]];
     const key =  Object.keys(users[attributes.userid])[0];

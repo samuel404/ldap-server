@@ -68,7 +68,6 @@ const getUserNewId = (req,res,next) => {
   });
 
   const attributes = getAttributes(req);
-
   if(idAttribute.matches(attributes)) {
     const newId = doesUserExist(attributes);
     
@@ -84,8 +83,6 @@ const getUserNewId = (req,res,next) => {
   return next(new ldap.NoSuchAttributeError(Object.keys(attributes).toString()));
   
 }
-
-
 
 
 module.exports = { urlEncoded ,getUserNewId};
